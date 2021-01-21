@@ -3,7 +3,7 @@ from os.path import join
 #configfile: "consortium.config.json"
 
 # Files
-sample = ["2"]
+sample = ["12"]
 
 # Path to files
 mutation_path = "/scratch/eknodel/Cancer_Genomics/01_somatic_mutation_calling/gatk_mutect2/"
@@ -48,7 +48,8 @@ rule match_results:
     input:
         mut = os.path.join(vep_path, "Patient{sample}/GATK_pt{sample}.vep"),
         pep = os.path.join(vep_path, "Patient{sample}/GATK_pt{sample}.peptides.formatted"),
-        scores = os.path.join(sequenza_path, "Patient{sample}_fastclone/scores.csv")
+        scores = os.path.join(sequenza_path, "Patient{sample}_fastclone/scores.csv"),
+        vaf = os.path.join(sequenza_path, "{sample}_sequenza2pyclone.txt")
     output:
         out = os.path.join(vep_path, "Patient{sample}/{sample}_matched_transcript_mutation.txt")
     params:
@@ -56,6 +57,6 @@ rule match_results:
         out_dir = os.path.join(vep_path, "Patient{sample}")
     shell:
         """
-        python match_genename_peptide.py {input.mut} {input.pep} {params.sample} {params.out_dir} {input.scores}
+        python match_genename_peptide.py {input.mut} {input.pep} {params.sample} {params.out_dir} {input.scores} {input.vaf}
         """
         
