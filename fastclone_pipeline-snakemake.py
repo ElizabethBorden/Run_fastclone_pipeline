@@ -12,7 +12,9 @@ vep_path = "/scratch/eknodel/Cancer_Genomics/02_variant_annotation/"
 
 rule all:
     input:
-        expand(sequenza_path + "{sample}_sequenza2pyclone.txt"),
+        expand(sequenza_path + "{sample}_sequenza2pyclone.txt", sample=sample),
+        expand(sequenza_path+"Patient{sample}_fastclone/scores.csv", sample=sample),
+        expand(vep_path+"Patient{sample}/{sample}_matched_transcript_mutation.txt", sample=sample)
 
 rule convert_to_pyclone_format:
     input:
@@ -37,19 +39,21 @@ rule run_fastclone:
         out_dir = os.path.join(sequenza_path, "Patient{sample}_fastclone")
     shell:
         """
-        fastclone load-pyclone prop {input.fc_input} None solve {params.out_dir}
+        rm -r {params.out_dir};
+        fastclone load-pyclone prop {input.fc_input} None solve {params.out_dir};
+        sed -i '1 s/^.*$/position,score1,score2,score3/' {output.fc_output}
         """
 
 rule match_results:
     input:
-        mut = os.path.join(vep_path, "Patient{sample}/GARK_pt{sample}.vep"),
+        mut = os.path.join(vep_path, "Patient{sample}/GATK_pt{sample}.vep"),
         pep = os.path.join(vep_path, "Patient{sample}/GATK_pt{sample}.peptides.formatted"),
         scores = os.path.join(sequenza_path, "Patient{sample}_fastclone/scores.csv")
     output:
         out = os.path.join(vep_path, "Patient{sample}/{sample}_matched_transcript_mutation.txt")
     params:
-        sample = sample.
-        out_dir = os.path.joinvep_path, "Patient{sample}"
+        sample = sample,
+        out_dir = os.path.join(vep_path, "Patient{sample}")
     shell:
         """
         python match_genename_peptide.py {input.mut} {input.pep} {params.sample} {params.out_dir} {input.scores}

@@ -10,11 +10,9 @@
 
 newgrp combinedlab
 
-python sequenza2pyclone.py \
-/scratch/eknodel/Cancer_Genomics/01_somatic_mutation_calling/gatk_mutect2/2.somatic.filtered.pass.vcf.forpyclone \
-/scratch/eknodel/FastClone_GuanLab/sequenza/2_segments.txt \
-Patient2 \
-/scratch/eknodel/FastClone_GuanLab/sequenza/
+source activate var_call_env
 
- 
-fastclone load-pyclone prop Patient2_sequenza2pyclone.txt  None solve ./Patient2_fastclone
+#export
+PERL5LIB=/packages/6x/vcftools/0.1.12b/lib/per15/site_perl
+
+snakemake --snakefile fastclone_pipeline-snakemake.py -j 15 --keep-target-files --rerun-incomplete --cluster "sbatch -n 1 -c 8 -t 1:00:00"
